@@ -624,7 +624,18 @@ def check_stock(item_name: str, as_of_date: str) -> str:
 
     return f"Item: {item_name} | Available Stock: {current_stock} units as of {as_of_date}"
 
-# Tools for quoting agent
+@tool
+def view_catalog_snapshot(as_of_date: str) -> str:
+    """
+    View a complete snapshot summary of all items currently in stock with a positive balance as of a specific date.
+    Args:
+        as_of_date: The date string format (YYYY-MM-DD) for checking catalog levels.
+    """
+    catalog = get_all_inventory(as_of_date)
+    if not catalog:
+        return f"No inventory items found with positive stock as of {as_of_date}."
+    return f"Current active warehouse inventory snapshot: {str(catalog)}"
+
 @tool
 def query_pricing_history(search_keywords: List[str]) -> str:
     """
@@ -672,31 +683,49 @@ def calculate_delivery_timeline(input_date: str, quantity: int) -> str:
     
     return f"Estimated Supplier Delivery Date is: {sup_date}"
 
+@tool
+def check_company_cash(as_of_date: str) -> str:
+    """
+    Retrieve the exact cash balance available in the company reserves as of a specific date.
+    Args:
+        as_of_date: The date string format (YYYY-MM-DD) to look up cash metrics.
+    """
+    balance = get_cash_balance(as_of_date)
+    return f"Available cash balance reserves as of {as_of_date}: ${balance:.2f}"
+
+@tool
+def view_financial_health_report(as_of_date: str) -> str:
+    """
+    Generates a complete executive financial snapshot report including asset totals and top selling metrics as of a specific date.
+    Args:
+        as_of_date: The date string format (YYYY-MM-DD) for running the audit.
+    """
+    report_data = generate_financial_report(as_of_date)
+    return (f"Financial Audit Snapshot on {as_of_date} | "
+            f"Cash Reserves: ${report_data['cash_balance']:.2f} | "
+            f"Warehouse Inventory Value: ${report_data['inventory_value']:.2f} | "
+            f"Combined Total Assets: ${report_data['total_assets']:.2f}")
+
 # Set up your agents and create an orchestration agent that will manage them.
 
 #Define 1st agent, Inventory Agent
 class InventoryAgent(ToolCallingAgent):
-    
     """Agent for checking stock levels and supplier constraints."""
-    
     def __init__(self, model: OpenAIServerModel):
         super().__init__(
-            tools=[check_stock],
+            tools=[check_stock, view_catalog_snapshot],
             model=model,
             name="inventory_agent",
-           description="""Internal warehouse manager.
-            CRITICAL DESIGN RULES:
-            1. Extract the item name requested by the user and look up its stock using `check_stock`.
-            2. If the user uses a broad phrase, check the stock for the primary material type (e.g., 'A4', 'cardstock', 'printer paper').
-            3. Return a clean text statement stating exactly how many units are available.
+            description="""Internal warehouse manager.
+            CRITICAL SYSTEM BOUNDARIES:
+            1. Look up specific product item stock counts using `check_stock`.
+            2. Use `view_catalog_snapshot` if you need a broad look at all current stock levels.
+            3. Tell your manager exactly what numbers are available. Never state that you are ordering replenishment stock or talking to an external vendor.
             """
         )
-
 #Define 2nd agent, Quote Agent
 class QuoteAgent(ToolCallingAgent):
-    
     """Agent for checking customer historical metrics and determining bulk pricing structures."""
-    
     def __init__(self, model: OpenAIServerModel):
         super().__init__(
             tools=[query_pricing_history],
@@ -710,15 +739,13 @@ class QuoteAgent(ToolCallingAgent):
                - Standard/A4/Printer paper: $0.05 per sheet/ream unit
                - Cardstock/Glossy/Premium paper: $0.15 per sheet/ream unit
                - Custom items (napkins, plates, cups, flyers): $0.10 per unit
-            4. Your final output to the manager MUST clearly state: 'TOTAL SALES PRICE: $[number]' so the price can be parsed.
+            4. Your final output to the manager MUST clearly state: 'TOTAL SALES PRICE: $[number]' so the price can be parsed. Never use language stating a price is a placeholder or unverified.
             """
         )
 
 #Define 3rd agent, Ordering Agent
 class OrderingAgent(ToolCallingAgent):
-    
     """Agent for finalizing sales transactions and calculating customer logistics timelines."""
-    
     def __init__(self, model: OpenAIServerModel):
         super().__init__(
             tools=[record_transaction, calculate_delivery_timeline],
@@ -729,35 +756,42 @@ class OrderingAgent(ToolCallingAgent):
             1. You are processing incoming corporate customer revenue. You MUST call `record_transaction` with transaction_type='sales'.
             2. Look at the price passed to you by the Quote Agent. It must be a POSITIVE float representing total client revenue (e.g., 25.0, 110.0). 
             3. NEVER use transaction_type='stock_orders'. Do not spend company funds on restocking orders.
-            4. Run `calculate_delivery_timeline` to establish the confirmation date, then provide a professional receipt string.
+            4. Never state you are placing an internal replenishment order or using a placeholder price in your response text. Provide a professional receipt confirmation string.
             """
         )
 
-#Define the Orchestrator Agent
+#Define teh Orchestrator agent, BusinessOrchestrator Agent
 class BusinessOrchestrator(ToolCallingAgent):
-    
     """Central company router agent that coordinates worker tasks to handle complex customer queries."""
-    
     def __init__(self, model: OpenAIServerModel):
-        # instantiate our subagents inside the orchestrator
         self.inventory_dept = InventoryAgent(model)
         self.quote_dept = QuoteAgent(model)
         self.ordering_dept = OrderingAgent(model)
         
         super().__init__(
-            tools=[],
+            tools=[check_company_cash, view_financial_health_report],
             model=model,
             managed_agents=[self.inventory_dept, self.quote_dept, self.ordering_dept],
             name="business_orchestrator",
             description="""The master root operations director for Munder Difflin.
-            STRICT SERIAL EXECUTION PIPELINE FOR EVERY ROW:
-            Step 1: Delegate to `inventory_dept` to discover stock volumes.
-            Step 2: Delegate to `quote_dept` to determine a positive calculated price quote.
-            Step 3: Extract that exact positive price from Step 2. Instruct `ordering_dept` to run `record_transaction` using transaction_type='sales' and that positive price amount.
-            Step 4: Combine the Reference ID, delivery timeline, and financial confirmation into a polished, definitive final summary for the customer.
+            
+            STRICT SERIAL EXECUTION PIPELINE FOR EVERY REQUEST:
+            Step 1: Always check warehouse availability by delegating to `inventory_dept`.
+            
+            Step 2: Always calculate an explicit dollar quote by delegating to `quote_dept`. 
+                    Ensure the quote assistant outputs a clean total figure in the exact format: 'TOTAL SALES PRICE: [number]'.
+            
+            Step 3: Extract that specific numeric value. You MUST call the `ordering_dept` tool `record_transaction` 
+                    using transaction_type='sales'. 
+                    CRITICAL FINANCIAL DIRECTION: The price argument MUST be passed as a positive float representing total client revenue 
+                    (e.g., if the price is $70.00, pass price=70.0). This represents incoming cash from a customer sale, which increases our cash balance.
+                    Never skip this step for successfully quoted orders.
+            
+            Step 4: Use `check_company_cash` to confirm our updated company liquid cash position after the sale.
+            
+            Step 5: Provide a clear summary response to the customer containing their Reference ID from the database and expected delivery date.
             """
         )
-        
 # Run your test scenarios by writing them here. Make sure to keep track of them.
 
 def run_test_scenarios():
