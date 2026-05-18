@@ -266,29 +266,25 @@ def create_transaction(
         Exception: For other database or execution errors.
     """
     try:
-        # Convert datetime to ISO string if necessary
         date_str = date.isoformat() if isinstance(date, datetime) else date
-
-        # Validate transaction type
         if transaction_type not in {"stock_orders", "sales"}:
             raise ValueError("Transaction type must be 'stock_orders' or 'sales'")
 
-        # Prepare transaction record as a single-row DataFrame
+        # Programmatic sanitization: guarantees numerical safety even if the agent 
+        # formats the cost parameter string with symbols or a negative prefix.
+        absolute_price = abs(float(price))
+
         transaction = pd.DataFrame([{
             "item_name": item_name,
             "transaction_type": transaction_type,
-            "units": quantity,
-            "price": price,
+            "units": int(quantity),
+            "price": absolute_price,
             "transaction_date": date_str,
         }])
-
-        # Insert the record into the database
+        
         transaction.to_sql("transactions", db_engine, if_exists="append", index=False)
-
-        # Fetch and return the ID of the inserted row
         result = pd.read_sql("SELECT last_insert_rowid() as id", db_engine)
         return int(result.iloc[0]["id"])
-
     except Exception as e:
         print(f"Error creating transaction: {e}")
         raise
@@ -663,14 +659,12 @@ def record_transaction(item_name: str, transaction_type: str, quantity: int, pri
         price: The price of the transaction
         date: The date in format (YYYY-MM-DD) to matching the transaction date
     """
-    
     try:
         tx_id = create_transaction(item_name, transaction_type, quantity, price, date)
         return f"Success: Transaction registered under Reference ID #{tx_id} ({transaction_type})."
-    
     except Exception as error:
         return f"Failed to record transaction: {str(error)}"
-
+        
 @tool
 def calculate_delivery_timeline(input_date: str, quantity: int) -> str:
     """
@@ -686,7 +680,8 @@ def calculate_delivery_timeline(input_date: str, quantity: int) -> str:
 @tool
 def check_company_cash(as_of_date: str) -> str:
     """
-    Retrieve the exact cash balance available in the company reserves as of a specific date.
+    Retrieve the exact cash balance available in corporate liquid reserves as of a specific date. 
+    Maps directly to the underlying helper function: check_company_cash ➔ get_cash_balance.
     Args:
         as_of_date: The date string format (YYYY-MM-DD) to look up cash metrics.
     """
@@ -708,7 +703,7 @@ def view_financial_health_report(as_of_date: str) -> str:
 
 # Set up your agents and create an orchestration agent that will manage them.
 
-#Define 1st agent, Inventory Agent
+# Define 1st agent, Inventory Agent
 class InventoryAgent(ToolCallingAgent):
     """Agent for checking stock levels and supplier constraints."""
     def __init__(self, model: OpenAIServerModel):
@@ -719,11 +714,12 @@ class InventoryAgent(ToolCallingAgent):
             description="""Internal warehouse manager.
             CRITICAL SYSTEM BOUNDARIES:
             1. Look up specific product item stock counts using `check_stock`.
-            2. Use `view_catalog_snapshot` if you need a broad look at all current stock levels.
-            3. Tell your manager exactly what numbers are available. Never state that you are ordering replenishment stock or talking to an external vendor.
+            2. If an item is not found or stock is 0, explicitly return: 'OUT OF STOCK'.
+            3. Never tell the customer or orchestrator to check with online marketplaces or competitors.
             """
         )
-#Define 2nd agent, Quote Agent
+
+# Define 2nd agent, Quote Agent
 class QuoteAgent(ToolCallingAgent):
     """Agent for checking customer historical metrics and determining bulk pricing structures."""
     def __init__(self, model: OpenAIServerModel):
@@ -734,16 +730,18 @@ class QuoteAgent(ToolCallingAgent):
             description="""Pricing and sales history specialist.
             CRITICAL FINANCIAL RULES:
             1. Use `query_pricing_history` to look up baseline logs.
-            2. Read the text returned by the tool, extract a valid unit price or flat rate mentioned, and multiply it by the requested quantity.
-            3. STRAC FALLBACK RULE: If the history tool does not yield an exact match or returns an ambiguous response, you MUST apply a fallback standard rate:
-               - Standard/A4/Printer paper: $0.05 per sheet/ream unit
-               - Cardstock/Glossy/Premium paper: $0.15 per sheet/ream unit
-               - Custom items (napkins, plates, cups, flyers): $0.10 per unit
-            4. Your final output to the manager MUST clearly state: 'TOTAL SALES PRICE: $[number]' so the price can be parsed. Never use language stating a price is a placeholder or unverified.
+            2. MANDATORY FALLBACK RULE: If the history tool returns 'No historical pricing matching records found' or doesn't match the exact item, you MUST calculate the price manually using these business rules:
+               - Standard/A4/Printer paper: $0.05 per sheet
+               - Letter-sized paper: $0.06 per sheet
+               - Cardstock: $0.15 per sheet
+               - Premium/Glossy/Matte/Specialty paper: $0.20 per sheet
+               - Products (Plates/Cups/Napkins/Flyers/Notepads): $0.10 per unit
+            3. Multiply the fallback unit price by the requested quantity.
+            4. Your final response MUST include the line: 'TOTAL SALES PRICE: [calculated numeric float]' so the orchestrator can parse it. Never say the price is unverified.
             """
         )
 
-#Define 3rd agent, Ordering Agent
+# Define 3rd agent, Ordering Agent
 class OrderingAgent(ToolCallingAgent):
     """Agent for finalizing sales transactions and calculating customer logistics timelines."""
     def __init__(self, model: OpenAIServerModel):
@@ -753,14 +751,14 @@ class OrderingAgent(ToolCallingAgent):
             name="ordering_agent",
             description="""Fulfillment and checkout specialist.
             CRITICAL SYSTEM BOUNDARIES:
-            1. You are processing incoming corporate customer revenue. You MUST call `record_transaction` with transaction_type='sales'.
-            2. Look at the price passed to you by the Quote Agent. It must be a POSITIVE float representing total client revenue (e.g., 25.0, 110.0). 
-            3. NEVER use transaction_type='stock_orders'. Do not spend company funds on restocking orders.
-            4. Never state you are placing an internal replenishment order or using a placeholder price in your response text. Provide a professional receipt confirmation string.
+            1. You are processing customer orders. You MUST call `record_transaction` with transaction_type='sales'.
+            2. The price argument passed to `record_transaction` must be a POSITIVE float representing customer revenue (e.g., price=150.0). This adds funds to company cash.
+            3. Always calculate the shipping date via `calculate_delivery_timeline`.
+            4. Return a clean confirmation including the Reference ID and delivery date.
             """
         )
 
-#Define teh Orchestrator agent, BusinessOrchestrator Agent
+# Define the Orchestrator agent, BusinessOrchestrator Agent
 class BusinessOrchestrator(ToolCallingAgent):
     """Central company router agent that coordinates worker tasks to handle complex customer queries."""
     def __init__(self, model: OpenAIServerModel):
@@ -775,21 +773,23 @@ class BusinessOrchestrator(ToolCallingAgent):
             name="business_orchestrator",
             description="""The master root operations director for Munder Difflin.
             
-            STRICT SERIAL EXECUTION PIPELINE FOR EVERY REQUEST:
-            Step 1: Always check warehouse availability by delegating to `inventory_dept`.
+            STRICT SERIAL EXECUTION PIPELINE FOR EVERY CUSTOMER REQUEST:
+            Step 1: Delegate to `inventory_dept` to check stock. If it returns 'OUT OF STOCK' or the item does not exist, immediately stop and inform the customer politely that the item is currently unavailable. Do not recommend competitors.
             
-            Step 2: Always calculate an explicit dollar quote by delegating to `quote_dept`. 
-                    Ensure the quote assistant outputs a clean total figure in the exact format: 'TOTAL SALES PRICE: [number]'.
+            Step 2: Delegate to `quote_dept` to calculate the total price. Ensure it returns a clear 'TOTAL SALES PRICE: [number]'.
             
-            Step 3: Extract that specific numeric value. You MUST call the `ordering_dept` tool `record_transaction` 
-                    using transaction_type='sales'. 
-                    CRITICAL FINANCIAL DIRECTION: The price argument MUST be passed as a positive float representing total client revenue 
-                    (e.g., if the price is $70.00, pass price=70.0). This represents incoming cash from a customer sale, which increases our cash balance.
-                    Never skip this step for successfully quoted orders.
+            Step 3: Extract that specific numeric price value and pass it to `ordering_dept`. Enforce that `ordering_dept` calls `record_transaction` with transaction_type='sales' and the calculated positive float price to save the order to the database.
             
-            Step 4: Use `check_company_cash` to confirm our updated company liquid cash position after the sale.
+            Step 4: Use `check_company_cash` to audit and log the updated corporate cash balance.
             
-            Step 5: Provide a clear summary response to the customer containing their Reference ID from the database and expected delivery date.
+            Step 5: Formulate a professional, customer-facing response. 
+            MANDATORY OUTPUT FORMAT FOR FULFILLED REQUESTS:
+            - Clear statement that the order has been successfully placed.
+            - Itemized item name and quantity requested.
+            - Clearly stated total price and unit cost breakdown.
+            - Database Reference ID from Step 3.
+            - Expected delivery date from the ordering department timeline.
+            NEVER reveal internal database paths, missing history logs, or system errors to the customer.
             """
         )
 # Run your test scenarios by writing them here. Make sure to keep track of them.
