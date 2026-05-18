@@ -1,47 +1,39 @@
-graph LR
-    %% Define styles
-    classDef orchestrator fill:#f9f;
-    classDef specialist fill:#bbf;
-    classDef external fill:#eee;
+graph TD
+    classDef agent fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef toolbox fill:#fff3e0,stroke:#e65100,stroke-width:1px,stroke-dasharray: 3 3;
+    classDef db fill:#efebe9,stroke:#3e2723,stroke-width:2px;
 
-    %% Main Ingress
-    User[Customer Request] -->|1. Submit| Orch(Business Orchestrator Agent)
-    class Orch orchestrator;
+    User[Customer Request Prompt] --> Orchestrator
 
-    %% Agent Layer Subgraph
-    subgraph Core_Agents [Specialist Core]
-        InvAgent(Inventory Agent)
-        QuoteAgent(Quote Agent)
-        TransAgent(Ordering Agent)
+    subgraph Manager_Layer ["Orchestration Layer"]
+        Orchestrator["Business Orchestrator Agent"]:::agent
+        Orchestrator_Tools["<b>Tool Box:</b><br/>- check_company_cash<br/>- view_financial_health_report"]:::toolbox
+        Orchestrator --> Orchestrator_Tools
     end
-    class InvAgent,QuoteAgent,TransAgent specialist;
 
-    %% Data & Action Subgraph
-    subgraph Systems [Backend & Logistics]
-        DB[(SQLite Database)]
-        Supplier[Supplier Logistics]
-        Timeline[Delivery Timeline]
+    Orchestrator -->|1. Check Stock| InventoryAgent
+    Orchestrator -->|2. Request Quote| QuoteAgent
+    Orchestrator -->|3. Route Checkout| OrderingAgent
+
+    subgraph Inventory_Layer ["Warehouse Dept"]
+        InventoryAgent["Inventory Agent"]:::agent
+        Inventory_Tools["<b>Tool Box:</b><br/>- check_stock ➔ get_stock_level<br/>- view_catalog_snapshot ➔ get_all_inventory"]:::toolbox
+        InventoryAgent --> Inventory_Tools
     end
-    class DB database;
-    class Supplier,Timeline external;
 
-    %% Routing Flow
-    Orch -->|2a. Stock Check| InvAgent
-    Orch -->|2b. Get Price| QuoteAgent
-    Orch -->|2c. Process Order| TransAgent
+    subgraph Quote_Layer ["Finance Dept"]
+        QuoteAgent["Quote Agent"]:::agent
+        Quote_Tools["<b>Tool Box:</b><br/>- query_pricing_history ➔ search_quote_history"]:::toolbox
+        QuoteAgent --> Quote_Tools
+    end
 
-    %% Tool & DB Flows
-    InvAgent <-->|Query Stock| DB
-    InvAgent -->|Restock Order| Supplier
+    subgraph Ordering_Layer ["Fulfillment Dept"]
+        OrderingAgent["Ordering Agent"]:::agent
+        Ordering_Tools["<b>Tool Box:</b><br/>- record_transaction ➔ create_transaction<br/>- calculate_delivery_timeline ➔ get_supplier_delivery_date"]:::toolbox
+        OrderingAgent --> Ordering_Tools
+    end
 
-    QuoteAgent <-->|Check History| DB
-
-    TransAgent <-->|Update Ledger| DB
-    TransAgent -->|Calculate ETA| Timeline
-
-    %% Response Flow
-    InvAgent -->|3a. Status Report| Orch
-    QuoteAgent -->|3b. Price Quote| Orch
-    TransAgent -->|3c. Confirmation| Orch
-
-    Orch -->|4. Final Response| User
+    Inventory_Tools --> DB[(SQLite Database)]:::db
+    Quote_Tools --> DB
+    Ordering_Tools --> DB
+    Orchestrator_Tools --> DB
