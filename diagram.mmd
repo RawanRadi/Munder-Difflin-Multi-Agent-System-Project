@@ -1,39 +1,46 @@
 graph TD
-    classDef agent fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef toolbox fill:#fff3e0,stroke:#e65100,stroke-width:1px,stroke-dasharray: 3 3;
-    classDef db fill:#efebe9,stroke:#3e2723,stroke-width:2px;
+    %% Define Styles
+    classDef orchestrator fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff;
+    classDef worker fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:#fff;
+    classDef database fill:#95a5a6,stroke:#7f8c8d,stroke-width:2px,color:#fff;
+    classDef output fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff;
+    classDef path stroke:#34495e,stroke-width:2px;
+    classDef returnPath stroke:#2980b9,stroke-width:2px,stroke-dasharray: 5 5;
 
-    User[Customer Request Prompt] --> Orchestrator
+    %% Nodes Configuration
+    Orchestrator[Business Orchestrator Agent<br/><b>Toolbox:</b><br/>• check_company_cash ➔ get_cash_balance<br/>• view_financial_health_report ➔ generate_financial_report]:::orchestrator
 
-    subgraph Manager_Layer ["Orchestration Layer"]
-        Orchestrator["Business Orchestrator Agent"]:::agent
-        Orchestrator_Tools["<b>Tool Box:</b><br/>- check_company_cash<br/>- view_financial_health_report"]:::toolbox
-        Orchestrator --> Orchestrator_Tools
+    Inventory[Inventory Agent Worker<br/><b>Toolbox:</b><br/>• check_stock ➔ get_stock_level<br/>• view_catalog_snapshot ➔ get_all_inventory]:::worker
+
+    Quote[Quote Agent Worker<br/><b>Toolbox:</b><br/>• query_pricing_history ➔ search_quote_history<br/><i>*Includes Fallback Rules</i>]:::worker
+
+    Ordering[Ordering Agent Worker<br/><b>Toolbox:</b><br/>• record_transaction ➔ create_transaction<br/>• calculate_delivery_timeline ➔ get_supplier_delivery_date]:::worker
+
+    subgraph DB [SQLite Database Architecture]
+        InvTable[(Table: inventory)]
+        TxTable[(Table: transactions)]
     end
+    class DB database;
 
-    Orchestrator -->|1. Check Stock| InventoryAgent
-    Orchestrator -->|2. Request Quote| QuoteAgent
-    Orchestrator -->|3. Route Checkout| OrderingAgent
+    Response[Professional Checkout Response / Receipt<br/>Itemized Quote, Reference ID, Delivery Date]:::output
 
-    subgraph Inventory_Layer ["Warehouse Dept"]
-        InventoryAgent["Inventory Agent"]:::agent
-        Inventory_Tools["<b>Tool Box:</b><br/>- check_stock ➔ get_stock_level<br/>- view_catalog_snapshot ➔ get_all_inventory"]:::toolbox
-        InventoryAgent --> Inventory_Tools
-    end
+    %% Forward Execution Flow
+    Orchestrator -->|1. Delegate Stock Check| Inventory
+    Orchestrator -->|2. Delegate Pricing| Quote
+    Orchestrator -->|3. Delegate Order Commit| Ordering
 
-    subgraph Quote_Layer ["Finance Dept"]
-        QuoteAgent["Quote Agent"]:::agent
-        Quote_Tools["<b>Tool Box:</b><br/>- query_pricing_history ➔ search_quote_history"]:::toolbox
-        QuoteAgent --> Quote_Tools
-    end
+    Inventory -->|Query Stock Levels| InvTable
+    Quote -->|Search Pricing Logs| TxTable
+    Ordering -->|Write Sales Record| TxTable
 
-    subgraph Ordering_Layer ["Fulfillment Dept"]
-        OrderingAgent["Ordering Agent"]:::agent
-        Ordering_Tools["<b>Tool Box:</b><br/>- record_transaction ➔ create_transaction<br/>- calculate_delivery_timeline ➔ get_supplier_delivery_date"]:::toolbox
-        OrderingAgent --> Ordering_Tools
-    end
+    %% Programmatic Return / Observation Pathways (Addressing Reviewer Note)
+    InvTable -.->|Stock Count Data| Inventory
+    TxTable -.->|Historical Match Data| Quote
+    TxTable -.->|Tx Reference ID| Ordering
 
-    Inventory_Tools --> DB[(SQLite Database)]:::db
-    Quote_Tools --> DB
-    Ordering_Tools --> DB
-    Orchestrator_Tools --> DB
+    Inventory -.->|Observation Feedback| Orchestrator
+    Quote -.->|TOTAL SALES PRICE: float| Orchestrator
+    Ordering -.->|Delivery Timeline & Ref ID| Orchestrator
+
+    %% Output Cycle
+    Orchestrator -->|4. Consolidate & Format| Response
