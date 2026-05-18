@@ -1,0 +1,47 @@
+graph LR
+    %% Define styles
+    classDef orchestrator fill:#f9f;
+    classDef specialist fill:#bbf;
+    classDef external fill:#eee;
+
+    %% Main Ingress
+    User[Customer Request] -->|1. Submit| Orch(Business Orchestrator Agent)
+    class Orch orchestrator;
+
+    %% Agent Layer Subgraph
+    subgraph Core_Agents [Specialist Core]
+        InvAgent(Inventory Agent)
+        QuoteAgent(Quote Agent)
+        TransAgent(Ordering Agent)
+    end
+    class InvAgent,QuoteAgent,TransAgent specialist;
+
+    %% Data & Action Subgraph
+    subgraph Systems [Backend & Logistics]
+        DB[(SQLite Database)]
+        Supplier[Supplier Logistics]
+        Timeline[Delivery Timeline]
+    end
+    class DB database;
+    class Supplier,Timeline external;
+
+    %% Routing Flow
+    Orch -->|2a. Stock Check| InvAgent
+    Orch -->|2b. Get Price| QuoteAgent
+    Orch -->|2c. Process Order| TransAgent
+
+    %% Tool & DB Flows
+    InvAgent <-->|Query Stock| DB
+    InvAgent -->|Restock Order| Supplier
+
+    QuoteAgent <-->|Check History| DB
+
+    TransAgent <-->|Update Ledger| DB
+    TransAgent -->|Calculate ETA| Timeline
+
+    %% Response Flow
+    InvAgent -->|3a. Status Report| Orch
+    QuoteAgent -->|3b. Price Quote| Orch
+    TransAgent -->|3c. Confirmation| Orch
+
+    Orch -->|4. Final Response| User
