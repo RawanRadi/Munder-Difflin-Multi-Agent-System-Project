@@ -34,7 +34,7 @@ The multi-agent system was evaluated using the full set of 20 sequential corpora
 | Baseline Operational Capital      | $45,059.70 (Post inventory initialization)  |
 | Final Audited Cash Balance        | $45,504.03                                  |
 | Successfully Fulfilled Orders     | 13 Requests (Fully processed or logged)     |
-| Intentionally Refused Stockouts  | 7 Requests (Catalog mismatches/Inventory)   |
+| Intentionally Refused Stockouts  | 7 Requests (Catalog mismatches/Inventory)    |
 +-----------------------------------+---------------------------------------------+
 
 ```
