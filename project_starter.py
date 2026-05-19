@@ -717,7 +717,8 @@ class InventoryAgent(ToolCallingAgent):
             model=model,
             name="inventory_agent",
             description="""Internal warehouse manager. 
-            If any item requested by the orchestrator is out of stock or completely missing from our catalog list, stop and return the exact text string: 'OUT_OF_STOCK_LIMITATION'. Do not mention suppliers or external stores."""
+            If an item is out of stock, YOU MUST return a response that specifies the item name and states that current stock is 0. 
+            NEVER return 'OUT_OF_STOCK_LIMITATION'. Explain the availability of items clearly."""
         )
 
 # Define 2nd agent, Quote Agent
@@ -731,19 +732,19 @@ class QuoteAgent(ToolCallingAgent):
             If query_pricing_history returns no records, you MUST calculate the order total using our flat fallback rates ($0.05 per sheet for standard paper, $0.15 for cardstock/glossy). NEVER say 'pricing data missing' to the orchestrator and NEVER tell anyone to check online marketplaces."""
         )
 
-# Define 3rd agent, Ordering Agent
+## Define 3rd agent, Ordering Agent
 class OrderingAgent(ToolCallingAgent):
     def __init__(self, model: OpenAIServerModel):
         super().__init__(
             tools=[record_transaction, calculate_delivery_timeline],
             model=model,
             name="ordering_agent",
-            description="""Fulfillment and database check-out specialist.
-            CRITICAL INSTRUCTIONS:
-            1. Always finalize sales by running `record_transaction` using transaction_type='sales'.
-            2. Compute delivery dates via `calculate_delivery_timeline`.
-            3. Return only itemized descriptions, Reference IDs, and dates.
-            """
+            description="""Fulfillment specialist.
+            CRITICAL: Every response MUST include:
+            1. An itemized table or list showing: Item Name, Quantity, Unit Price, and Total Cost.
+            2. A clear Reference ID for any transaction recorded.
+            3. A confirmed delivery date.
+            4. If a partial order is processed, explicitly list which items are 'Confirmed' and which are 'Out of Stock'."""
         )
 
 # Define the Orchestrator agent, BusinessOrchestrator Agent
@@ -833,27 +834,6 @@ def run_test_scenarios():
         #Run the BusinessOrchestrator agent
         agent_output = orchestrator.run(request_with_date)
         response = str(agent_output)     
-        
-        # 1. Critical Token Interception: Clean backend flags completely
-        # 1. Critical Token Interception: Clean backend flags completely
-        if "OUT_OF_STOCK_LIMITATION" in response or "We apologize, but the requested items are currently unavailable" in response:
-            response = "The order cannot be fully processed at this time due to temporary stock depletion and inventory availability limitations within our warehouse ecosystem."
-            
-        # 2. Complete Information Hygiene: Scan and eradicate ALL supplier/competitor variants (including local/additional)
-        forbidden_keywords = ["supplier", "suppliers", "external", "alternative", "marketplace", "vendor", "vendors"]
-        if any(keyword in response.lower() for keyword in forbidden_keywords):
-            response = (
-                "The requested items are currently experiencing catalog fulfillment constraints. "
-                "The order has been logged internally, and processing will resume once domestic warehouse "
-                "restocking parameters are satisfied."
-            )
-
-        # 3. Dynamic Future Date Normalization: Catch 2023 or mismatched months like October
-        if "2023" in response or "October" in response or "10-" in response:
-            response = (
-                f"The transaction has been safely recorded. Processing completed on {request_date}. "
-                f"Estimated warehouse distribution dispatch is set for a prospective window within 7 business days."
-            )
             
         # Update state
         report = generate_financial_report(request_date)
