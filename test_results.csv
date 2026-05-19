@@ -1,33 +1,140 @@
 request_id,request_date,cash_balance,inventory_value,response
-1,2025-04-01,45059.7,4940.299999999999,"The requested items are currently experiencing catalog fulfillment constraints. The order has been logged internally, and processing will resume once domestic warehouse restocking parameters are satisfied."
-2,2025-04-03,45059.7,4940.299999999999,The order cannot be fully processed at this time due to temporary stock depletion and inventory availability limitations within our warehouse ecosystem.
-3,2025-04-04,45059.7,4940.299999999999,"The order for 10,000 sheets of A4 paper and 5,000 sheets of A3 paper has been successfully placed, but the delivery is scheduled for April 22, 2025, which is later than the required date of April 15, 2025, for the upcoming conference. The order for 500 reams of printer paper was successfully placed with delivery scheduled for April 15, 2025."
-4,2025-04-05,45059.7,4940.299999999999,The order cannot be fully processed at this time due to temporary stock depletion and inventory availability limitations within our warehouse ecosystem.
-5,2025-04-05,45059.7,4940.299999999999,"The order for 500 sheets of 8.5""x11"" colored paper and 300 sheets of cardstock has been successfully placed for delivery on April 15, 2025. The order for decorative washi tape could not be fulfilled due to lack of stock."
-6,2025-04-06,45909.7,4910.299999999999,"Orders have been placed successfully. 
+1,2025-04-01,45059.7,4940.299999999999,"The requested supplies for the ceremony cannot be fulfilled due to the following availability issues:
 
-1. **200 sheets of cardstock** in various colors will be delivered on **April 19, 2025**.
-2. **300 sheets of white printer paper** will be delivered on **April 23, 2025**.
-3. The order for **500 sheets of colorful construction paper** is also set for delivery on **April 19, 2025**."
-7,2025-04-07,45909.7,4910.299999999999,"The order for 500 sheets of glossy A4 paper, 1000 sheets of matte A3 paper, and 300 poster boards will be delivered by April 19, 2025, due to the lack of available stock for heavyweight cardstock."
-8,2025-04-07,45909.7,4910.299999999999,The transaction has been safely recorded. Processing completed on 2025-04-07. Estimated warehouse distribution dispatch is set for a prospective window within 7 business days.
-9,2025-04-07,45909.7,4910.299999999999,"The order for 200 sheets of A4 white printer paper and 100 sheets of A3 glossy paper has been successfully placed for delivery by April 10, 2025. The order for 50 packets of 100% recycled kraft paper envelopes could not be fulfilled due to lack of stock. Available cash balance reserves as of 2025-04-07 is $45909.70."
-13,2025-04-08,45989.7,4910.299999999999,"The requested items are currently experiencing catalog fulfillment constraints. The order has been logged internally, and processing will resume once domestic warehouse restocking parameters are satisfied."
-12,2025-04-08,45989.7,4910.299999999999,"The requested items are currently experiencing catalog fulfillment constraints. The order has been logged internally, and processing will resume once domestic warehouse restocking parameters are satisfied."
-10,2025-04-08,45989.7,4910.299999999999,"The orders for 500 sheets of high-quality glossy paper and 300 sheets of sturdy cardstock have been successfully placed. The total cost for the order is $120.00, but please note that the estimated delivery date is set for April 19, 2025, which is after the requested delivery date of April 15, 2025."
-11,2025-04-08,45989.7,4910.299999999999,The order cannot be fully processed at this time due to temporary stock depletion and inventory availability limitations within our warehouse ecosystem.
-14,2025-04-09,45989.7,4910.299999999999,"The requested items are currently experiencing catalog fulfillment constraints. The order has been logged internally, and processing will resume once domestic warehouse restocking parameters are satisfied."
-15,2025-04-12,46269.7,4910.299999999999,"The requested items are currently experiencing catalog fulfillment constraints. The order has been logged internally, and processing will resume once domestic warehouse restocking parameters are satisfied."
-16,2025-04-13,46269.7,4910.299999999999,The order cannot be fully processed at this time due to temporary stock depletion and inventory availability limitations within our warehouse ecosystem.
-17,2025-04-14,46269.7,4910.299999999999,"Currently, we cannot fulfill the order for the following supplies:
+1. **A4 Glossy Paper**: Available
+   - Quantity: 200 sheets
 
-1. 1000 sheets of A4 white printer paper - Available
-2. 500 sheets of A3 colored paper (assorted colors) - Available
-3. 2000 table napkins (white) - Available
-4. 1000 paper cups (biodegradable) - Unavailable
-5. 500 paper plates (biodegradable) - Unavailable
+2. **Heavy Cardstock (White)**: Not Available
+   - Quantity Needed: 100 sheets
+   - Current Stock: 0 sheets (negative stock reported for the due date)
 
-Please advise on how you would like to proceed with the order considering the unavailability of biodegradable paper cups and plates."
-18,2025-04-14,46269.7,4910.299999999999,The order cannot be fully processed at this time due to temporary stock depletion and inventory availability limitations within our warehouse ecosystem.
-19,2025-04-15,50884.7,4410.299999999999,"The requested items are currently experiencing catalog fulfillment constraints. The order has been logged internally, and processing will resume once domestic warehouse restocking parameters are satisfied."
-20,2025-04-17,50984.7,4410.299999999999,"The order of 5,000 flyers, 2,000 posters, and 10,000 tickets is confirmed, with an estimated delivery date of May 15, 2025."
+3. **Colored Paper (Assorted Colors)**: Not Available
+   - Quantity Needed: 100 sheets
+   - Current Stock: 0 sheets
+
+Unfortunately, both the heavy cardstock and assorted colored paper are out of stock. Please consider alternatives or adjust the order specifications."
+2,2025-04-03,45059.7,4940.299999999999,"All requested items are currently out of stock. However, an order was placed as follows:
+- **500 sheets of colorful poster paper:** $250.00
+- **300 rolls of streamers:** $150.00
+- **200 balloons:** $100.00
+
+Total Order Value: $500.00
+
+Estimated Delivery Date: April 15, 2025
+
+Please note that the initial calculations suggested the suppliers might deliver by April 19, 2025, but the target delivery date has been set for April 15, 2025."
+3,2025-04-04,45059.7,4940.299999999999,"The order for supplies for the upcoming conference has been successfully placed. Here are the details:
+
+- **10,000 sheets of A4 paper**, with an estimated delivery date of **April 22, 2025**.
+- **5,000 sheets of A3 paper**, with an estimated delivery date of **April 19, 2025**.
+- **500 reams of printer paper**, with an estimated delivery date of **April 22, 2025**.
+
+It's recommended to follow up with suppliers as the delivery dates approach."
+4,2025-04-05,45059.7,4940.299999999999,"Order Summary:
+
+1. A4 Size Printer Paper:
+   - Quantity: 250 sheets
+   - Reference ID: #27
+   - Delivery Date: April 15, 2025
+
+2. High-Quality Recycled Cardstock:
+   - Quantity: 500 sheets
+   - Reference ID: #28
+   - Estimated Delivery Date: April 19, 2025 (slightly delayed past requested date)
+
+Please monitor the delivery schedules to ensure all items arrive on time."
+5,2025-04-05,45059.7,4940.299999999999,"The order for 500 sheets of 8.5""x11"" colored paper (Reference ID #27) and 300 sheets of cardstock in various colors (Reference ID #30) has been successfully placed and is scheduled for delivery by April 15, 2025. Note that the order for 200 rolls of decorative washi tape could not be processed due to unavailability."
+6,2025-04-06,45059.7,4940.299999999999,"The order for 500 sheets of colorful construction paper has been successfully processed. 
+
+- **Reference ID**: #30  
+- **Item Name**: Colorful Construction Paper  
+- **Quantity**: 500 sheets  
+- **Unit Price**: $0.10  
+- **Total Cost**: $50.00  
+- **Confirmed Delivery Date**: April 15, 2025  
+- **Estimated Supplier Delivery Date**: April 19, 2025  
+
+Note: White printer paper and cardstock were unavailable for order."
+7,2025-04-07,45059.7,4940.299999999999,"The large order for paper supplies for the exhibition has been successfully placed, but all requested items are currently out of stock. The order includes:
+- 500 sheets of glossy A4 paper
+- 1000 sheets of matte A3 paper
+- 300 poster boards (24"" x 36"")
+- 200 sheets of heavyweight cardstock
+
+Scheduled delivery is on April 15, 2025, but since all items have an available stock of 0 units, further actions may need to be considered, such as backordering or sourcing from alternative suppliers."
+8,2025-04-07,45059.7,4940.299999999999,"All requested paper types are currently out of stock. However, a successful order has been placed for 500 sheets of A4 glossy paper, 1000 sheets of A4 matte paper, 2000 sheets of A5 colored paper, and 3000 sheets of A4 recycled paper. Delivery dates are April 11, 2025, for the glossy and matte paper, and April 14, 2025, for the colored and recycled paper. Orders have been recorded with reference IDs: A4 glossy (ID #39), A4 matte (ID #40), A5 colored (ID #39), A4 recycled (ID #39)."
+9,2025-04-07,45059.7,4940.299999999999,"All requested paper supplies are currently out of stock:
+1. 200 sheets of A4 white printer paper: 0 units available.
+2. 100 sheets of A3 glossy paper: 0 units available.
+3. 50 packets of 100% recycled kraft paper envelopes: 0 units available.
+
+However, the order was processed successfully:
+- A4 white printer paper: Estimated delivery on April 11, 2025, Reference ID #39.
+- A3 glossy paper: Estimated delivery on April 11, 2025, Reference ID #39.
+- 100% recycled kraft paper envelopes: Estimated delivery on April 14, 2025, Reference ID #43."
+13,2025-04-08,45109.7,4940.299999999999,"The order for 500 sheets of A4 printing paper has been successfully processed with a total cost of $25 (Reference ID #46). However, the order for 200 sheets of cardstock could not be fulfilled due to a lack of availability."
+12,2025-04-08,45119.7,4940.299999999999,"Order Summary:
+
+1. **100 Paper Napkins**
+   - Quantity: 100
+   - Estimated Delivery: April 16, 2025
+   - Reference ID: #48
+
+2. **200 Colorful Cardstock**
+   - Order status: Pending (awaiting details)
+
+3. **500 Sheets of Standard Printer Paper**
+   - Quantity: 500
+   - Estimated Delivery: April 19, 2025
+   - Reference ID: #48
+
+Total price for standard printer paper: $30. Delivery dates for both cardstock and printer paper are delayed beyond the requested date of April 15, 2025. Further communication with suppliers may be necessary."
+10,2025-04-08,45119.7,4940.299999999999,"An order for 500 sheets of high-quality glossy paper has been successfully placed, with delivery scheduled for April 15, 2025. Reference ID: #48. Sturdy cardstock is out of stock and cannot be ordered."
+11,2025-04-08,45119.7,4940.299999999999,"The order for 500 sheets of A3 glossy paper has been successfully placed for delivery by April 15, 2025, at a total cost of $75. However, the order for 300 sheets of A4 matte paper could not be fulfilled due to zero stock availability."
+14,2025-04-09,45119.7,4940.299999999999,"Unfortunately, the requested paper supplies are not available in stock: 5,000 sheets of A4 paper, 2,000 sheets of poster paper in various colors, and 500 sheets of cardstock. Current stock levels show zero availability for all requested items. 
+
+However, historical pricing from a similar order indicates the following:  
+- A4 paper (500 reams): $0.05 per sheet, totaling $25 for 5,000 sheets.  
+- Colored poster paper (300 reams): $0.10 per sheet, totaling $30 for 2,000 sheets.  
+- Cardstock (2,000 sheets): $0.15 per sheet, totaling $300.  
+- Large format poster paper (1,000 sheets): $1.00 per sheet, totaling $1,000.  
+
+The total estimated amount was $1,355, but note that these prices may have changed since January 2025. It may be necessary to place an order for new stock or find alternative suppliers."
+15,2025-04-12,45719.7,4940.299999999999,"Order placed successfully for 10,000 sheets of A4 white paper and 5,000 sheets of A3 colored paper (assorted colors). The estimated delivery date is April 22, 2025. Note: 500 reams of cardboard for signage are currently out of stock and cannot be ordered at this time."
+16,2025-04-13,45719.7,4940.299999999999,"The order for the assembly event has been successfully placed with the following details:
+
+- 500 sheets of A4 printer paper at $0.05 each: Total $25.00
+- 200 sheets of colorful construction paper at $0.15 each: Total $30.00
+- 100 sheets of poster board at $0.15 each: Total $15.00
+
+All items are scheduled for delivery on April 15, 2025. Reference IDs for the transactions are #55 and #57."
+17,2025-04-14,46619.7,4940.299999999999,"All paper supplies for the reception have been successfully ordered and will be delivered on April 15, 2025. The items ordered include: 
+- 1000 sheets of A4 white printer paper
+- 500 sheets of A3 colored paper (assorted colors)
+- 2000 table napkins (white)
+- 1000 biodegradable paper cups
+- 500 biodegradable paper plates
+
+Reference IDs for tracking:
+- A4 white printer paper: #60
+- A3 colored paper: #60
+- Table napkins: #62
+- Biodegradable paper cups: #60
+- Biodegradable paper plates: #61"
+18,2025-04-14,46619.7,4940.299999999999,"Currently, there are no items in stock for the requested paper supplies, including 500 sheets of high-quality white cardstock, 1000 sheets of standard printing paper, and 200 sheets of colored paper in assorted colors. This indicates that the request cannot be fulfilled as of now."
+19,2025-04-15,54920.149999999994,4440.299999999999,"All requested paper supplies have been successfully ordered and will be delivered by April 20, 2025.\n\n- 2000 sheets of A4 glossy paper have been ordered with Reference ID #63 at a total cost of $500.0.\n- 1500 sheets of A3 matte paper have been ordered with Reference ID #61 at a total cost of $450.0.\n- 1000 sheets of cardstock in assorted colors have been ordered with Reference ID #65 at a total cost of $600.0.\n\nMake sure to keep track of the Reference IDs for any future inquiries."
+20,2025-04-17,57220.149999999994,4440.299999999999,"The order for the concert has been placed successfully with the following details:
+
+### Ordered Items:
+- **Flyers:** 5,000 units (Total Cost: $500)
+- **Posters:** 2,000 units (Total Cost: $300)
+- **Tickets:** 10,000 units (Total Cost: $1,500)
+
+### Total Order Cost:
+- **Total:** $2,300
+
+### Delivery Information:
+- **Reference ID for Flyers:** #68
+- **Reference ID for Posters:** #65
+- **Reference ID for Tickets:** #65
+- **Estimated Delivery Date:** May 22, 2025 (Note: This is later than the requested date of May 15, 2025)."
